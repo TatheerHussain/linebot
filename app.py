@@ -37,12 +37,23 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    """ Here's all the messages will be handled and processed by the program """
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=event.message.text))
+    question = event.message.text
+    try:
+        finder = Seacher()
+        profile = line_bot_api.get_profile(event.source.user_id)
+        annoy = random.choice(finder.searchArticle(question))
+        str1 = "Hi "+ profile.display_name + " !\n\n"
+        str2 = '\n\n You can click the link below\n' +annoy ['url']
+        answer = qanet(question,annoy['content'])
+        message = TextSendMessage(text= str1+ answer +str2)
+        line_bot_api.reply_message(event.reply_token,message)
 
-
+    except TypeError:
+        message = TextSendMessage(text="can you type new query")
+        line_bot_api.reply_message(event.reply_token,message)
+    
+import os 
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    print("start line bot")
+    context = ('ssl/fullchain.pem', 'ssl/privkey.pem')
+    app.run(host='0.0.0.0', port= 5000, debug=True, ssl_context=context)
